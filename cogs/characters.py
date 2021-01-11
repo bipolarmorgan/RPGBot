@@ -94,7 +94,9 @@ class Characters(commands.Cog):
             embed = discord.Embed(description=char.description)
             embed.set_author(name=char.name, icon_url=owner.avatar_url)
             if char.meta.get("image"):
-                embed.set_thumbnail(url=char.meta["image"])
+                embed.set_image(url=char.meta["image"])
+            if char.meta.get("icon"):
+                embed.set_thumbnail(url=char.meta["icon"])
             embed.add_field(name=await _(ctx, "Name"), value=char.name)
             embed.add_field(name=await _(ctx, "Owner"), value=str(owner))
             if char.level is not None:
@@ -168,7 +170,7 @@ class Characters(commands.Cog):
             await ctx.send(await _(ctx, "A character with this name already exists!"))
             return
 
-        check = lambda x: x.channel is ctx.channel and x.author is ctx.author
+        check = lambda x: x.channel == ctx.channel and x.author == ctx.author
         character = dict(name=name, owner=user.id, meta=dict(), team=list())
         await ctx.send(
             await _(ctx, "Describe the character (Relevant character sheet) (Say `done` when you're done describing)"))
@@ -234,8 +236,7 @@ class Characters(commands.Cog):
 
             await self.bot.db.update_guild_data(ctx.guild, data)
 
-        async with self.bot.di.rm.lock(ctx.guild.id):
-            await self.bot.di.add_character(ctx.guild, Character(**character))
+        await self.bot.di.add_character(ctx.guild, Character(**character))
         await ctx.send(
             await _(ctx, "Character created!"))
 
